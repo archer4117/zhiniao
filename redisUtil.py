@@ -15,4 +15,4 @@ if __name__ == '__main__':
 
     for key in keys:
         value = r_conn.get(key)
-        print key, value
+        print(key, value)

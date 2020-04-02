@@ -1,0 +1,7 @@
+beautifulsoup4==4.5.3
+requests==2.18.4
+redis==3.4.1
+selenium
+Pillow
+
+tesserocr==2.4

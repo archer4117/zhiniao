@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 import redisUtil
-
+import checkCode
 
 # 保存题库
 def init_answer():
@@ -41,14 +41,14 @@ def init_answer():
 
 def get_question_count(browser):
     question_count = browser.find_element_by_css_selector("[class='info-value question-counts']")
-    print question_count.text
+    print(question_count.text)
     count = int(question_count.text)
     return count
 
 
 def click_start_exam(browser):
     start_btn = browser.find_element_by_id("exam-btn-wrapper")
-    print start_btn.text
+    print(start_btn.text)
     start_btn.click()
     param_know = (By.CLASS_NAME, "modal-alert-footer")
     windows = WebDriverWait(browser, 20).until(EC.visibility_of_element_located(param_know))
@@ -82,7 +82,7 @@ def confirm_commit_answer(browser):
 
 def commit_answer(browser):
     commit = browser.find_element_by_css_selector("[class='btn submit-btn zn-btn-default']")
-    print commit.text
+    print(commit.text)
     commit.click()
 
 
@@ -99,7 +99,7 @@ def add_error_question(browser, count):
         # 正确答案
         wait_correct_answer = (By.CLASS_NAME, "correct-answer")
         correct_answer = WebDriverWait(browser, 10).until(EC.visibility_of_element_located(wait_correct_answer))
-        print "正确答案", correct_answer.text
+        print(u"正确答案", correct_answer.text)
 
         r_conn = redisUtil.get_connection()
         r_conn.setnx(key_pref + question, correct_answer.text)
@@ -129,17 +129,17 @@ def get_question(browser):
     wait_question = (By.CLASS_NAME, "question-title")
     question = WebDriverWait(browser, 5).until(EC.visibility_of_element_located(wait_question))
     question_str = question.text.split('.', 1)
-    print question_str[0], question_str[1]
+    print(question_str[0], question_str[1])
     return question_str[0], question_str[1]
 
 
-def start_exam():
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--start-maximized')
-    browser = webdriver.Chrome(executable_path='./driver/chromedriver.exe',
-                               chrome_options=chrome_options)
-    # 访问登录页面
-    browser.get(url)
+def start_exam(browser):
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument('--start-maximized')
+    # browser = webdriver.Chrome(executable_path='./driver/chromedriver.exe',
+    #                            chrome_options=chrome_options)
+    # # 访问登录页面
+    # browser.get(url)
 
     # 题目数
     count = get_question_count(browser)
@@ -158,7 +158,7 @@ def start_exam():
         wait_question_type = (By.CLASS_NAME, "question-type")
         # 问题类型
         question_type = WebDriverWait(browser, 5).until(EC.visibility_of_element_located(wait_question_type))
-        print question_type.text
+        print(question_type.text)
 
         answer_ul = browser.find_element_by_class_name("answers")
         answer_li = answer_ul.find_elements_by_xpath('li')
@@ -168,7 +168,7 @@ def start_exam():
             key = li.find_element_by_class_name("answer-key")
             value = li.find_element_by_class_name("answer-content")
             answer_key = key.text[0]
-            print answer_key, value.text
+            print(answer_key, value.text)
             if question_type.text == u"多选题":
                 if answer_map is None:
                     break
@@ -184,7 +184,7 @@ def start_exam():
                     break
         if not match:
             answer_li[0].click()
-            print "没有匹配的答案，盲选A。题号：", num
+            print("没有匹配的答案，盲选A。题号：", num)
 
         if question_type.text == u"多选题":
             # 下一题
@@ -204,12 +204,24 @@ def start_exam():
     add_error_question(browser, count)
 
 
+
 if __name__ == '__main__':
     url = "https://www.zhi-niao.com/znWeb/exam/detail.html?examId=1220444&mode=F&data=JTdCJTIyaXNTaW5nbGVMb2dpbiUyMiUzQSU3QiU3RCUyQyUyMm1lc3NhZ2VJbmZvJTIyJTNBJTdCJTIycHVzaE1lc3NhZ2UlMjIlM0ElMjJOJTIyJTdEJTJDJTIyb3JpZ2luJTIyJTNBJTIyaHR0cCUzQSUyRiUyRnd3dy56aGktbmlhby5jb20lMjIlMkMlMjJzZXNzaW9uSW5mbyUyMiUzQSU3QiUyMmVudGVycHJpc2VJZCUyMiUzQSUyMjI2MzZFM0U4RDA4OTM4ODRFMDU0QTAzNjlGMTkzNEVDJTIyJTJDJTIyZW50ZXJwcmlzZU5hbWUlMjIlM0ElMjIlRTYlQjclQjElRTUlOUMlQjMlRTclOTklQkUlRTYlOUUlOUMlRTUlOUIlQUQlRTUlQUUlOUUlRTQlQjglOUElRTUlOEYlOTElRTUlQjElOTUlRTYlOUMlODklRTklOTklOTAlRTUlODUlQUMlRTUlOEYlQjglMjIlMkMlMjJzaWQlMjIlM0ElMjJEMTlBRUQzNTZFRjQ0MTY2QjlGRkYzN0MyNzRGQzgwRSUyMiUyQyUyMnVzZXJJZCUyMiUzQSUyMjkxMEUwRDE5MEIxNzQ1RUJBNkRCRDY5OEIxREREQUUxJTIyJTJDJTIyYXBwSWQlMjIlM0ElMjJjb20ucGluZ2FuLnpoaW5pYW8lMjIlN0QlMkMlMjJ1c2VySW5mbyUyMiUzQSU3QiUyMmlzQWdyZWVMaXZlJTIyJTNBJTIyMSUyMiUyQyUyMmlzRnJlZSUyMiUzQSUyMjAlMjIlMkMlMjJpc1dsdCUyMiUzQSUyMjAlMjIlMkMlMjJuaWNrTmFtZSUyMiUzQSUyMiVFOSVCOCU5RiVFNSVBRSU5RDcwMTc0MCUyMiUyQyUyMnNwZWNpYWxMYWJlbCUyMiUzQW51bGwlMkMlMjJ1c2VySW1nJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZtbGVhcm4ucGluZ2FuLmNvbS5jbiUyRmxlYXJuJTJGYXBwJTJGZGVmYXVsdDIlMjIlMkMlMjJ1c2VyTmFtZSUyMiUzQSUyMiVFNSU5MCVCNCVFNiVCMiU4MSVFOCU4QSVBRSUyMiU3RCUyQyUyMnRoZW1lJTIyJTNBJTdCJTIyaXNQY09wZW4lMjIlM0FmYWxzZSUyQyUyMnBsYXRmb3JtTmFtZSUyMiUzQSUyMiVFNyU5RiVBNSVFOSVCOCU5RiVFNSVCOSVCMyVFNSU4RiVCMCUyMiUyQyUyMmluZGl2aWR1YXRpb25LZXklMjIlM0ElMjIlMjIlMkMlMjJsb2dvVXJsJTIyJTNBJTIyJTIyJTJDJTIycHJpbWFyeSUyMiUzQSUyMiUyM0ZBNTM0QSUyMiU3RCU3RA=="
     # key_pref = "20200304:"
     key_pref = "20200312:"
     # 交白卷
     # init_answer()
+
+    # 登录
+    # username = "13247123079"
+    # password = "wing4117"
+    username = "13724030594"
+    password = "lyq05942020"
+    browser = checkCode.login(username, password)
+    # 进入考试页面
+    checkCode.jump_my_test(browser)
+    checkCode.in_test(browser)
+
     # 正常考试
-    start_exam()
+    start_exam(browser)
     time.sleep(1000)
